@@ -1,3 +1,8 @@
+/*
+Great Thanks: https://github.com/portswigger/authz
+ */
+
+
 package common;
 
 import burp.*;
@@ -34,7 +39,7 @@ public class Methods {
 
     public static boolean findStringFromMessageByte(byte[] messageByte,String keyword){
         String reqString = new String(messageByte);
-        boolean caseDifference = KeywordHunter.getInstance().Hunter_CaseDifference_CheckBox.isSelected();
+        boolean caseDifference = KeywordHunter.getInstance().Hunter_CaseSensitive_CheckBox.isSelected();
         if(!caseDifference){
             reqString = reqString.toLowerCase();
             keyword = keyword.toLowerCase();
