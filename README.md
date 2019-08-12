@@ -27,6 +27,10 @@ A Burp-Extension can hunt some keywords that might leak sensitive information.
 
 ![SendtoRepeater](/images/SendtoRepeater2.png)
 
+* Use Filter to filter filename & domain.
+
+![Filter](/images/Filter.png)
+
 ## Version Notes
 
 ### 20190808 v0.1
@@ -35,6 +39,11 @@ A Burp-Extension can hunt some keywords that might leak sensitive information.
 ### 20190809 v0.1.1
 * Add Request/Response TextEditor.
 * Fix Spelling mistake......
+* Update README.md & images.
+
+### 20190812 v0.2
+* Add File & Domain Filter.
+* Add Headers & Body Hunter to choose.
 * Update README.md & images.
 
 ## For bugs
