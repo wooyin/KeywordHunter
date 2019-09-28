@@ -3,7 +3,6 @@ package GUI;
 import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import burp.ITextEditor;
-import common.Config;
 import static common.Methods.getListString;
 import static common.Methods.insertString;
 import static common.Methods.getClipboardContents;
@@ -31,15 +30,9 @@ public class KeywordHunter extends javax.swing.JPanel {
     private IHttpRequestResponse textMessageInfo;
     ITextEditor request_textEditor;
     ITextEditor response_textEditor;
-       
-    private void addComponentListener(Component component) {
-        component.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent evt) {
-                textAddRightClickActions(evt);
-            }
-        });
-    }
-            
+    private final String[] HUNTER_KEYWORDS = { "passw", "sql", "pwd" ,"ftp","ssh"};
+    private final String FILE_FILTER_STRING = "js;css;swf;gif;png;woff;jpg;exe;map;woff2";
+                   
     public void initTab(IBurpExtenderCallbacks callbacks) {
         this.callbacks = callbacks;
         initComponents();
@@ -50,6 +43,14 @@ public class KeywordHunter extends javax.swing.JPanel {
         if(mainPane == null)
             mainPane = new KeywordHunter();
         return mainPane;
+    }
+    
+    private void addComponentListener(Component component) {
+        component.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent evt) {
+                textAddRightClickActions(evt);
+            }
+        });
     }
 
     public IHttpRequestResponse getRequestObjectByRow(JTable table, int row) {
@@ -119,51 +120,56 @@ public class KeywordHunter extends javax.swing.JPanel {
             popupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
         }
     }
-    
+       
     public void initValue(IBurpExtenderCallbacks callbacks){
-        if (callbacks.loadExtensionSetting("Hunter_Request_RadioButton") != null){
-            Hunter_Request_RadioButton.setSelected(Boolean.parseBoolean(callbacks.loadExtensionSetting("Hunter_Request_RadioButton")));
+        if (callbacks.loadExtensionSetting("Hunter_CaseSensitive_CheckBox") != null) {
+            Hunter_CaseSensitive_CheckBox.setSelected(Boolean.parseBoolean(callbacks.loadExtensionSetting("Hunter_CaseSensitive_CheckBox")));
         }
-        else{ Hunter_Request_RadioButton.setSelected(Hunter_Request_RadioButton.isSelected());}
-        
-        if (callbacks.loadExtensionSetting("Hunter_Response_RadioButton") != null){
-            Hunter_Response_RadioButton.setSelected(Boolean.parseBoolean(callbacks.loadExtensionSetting("Hunter_Response_RadioButton")));
-        }
-        else{ Hunter_Response_RadioButton.setSelected(Hunter_Response_RadioButton.isSelected());}
-                
-        if (callbacks.loadExtensionSetting("Hunter_Both_RadioButton") != null){
-            Hunter_Both_RadioButton.setSelected(Boolean.parseBoolean(callbacks.loadExtensionSetting("Hunter_Both_RadioButton")));
-        }
-        else{ Hunter_Both_RadioButton.setSelected(Hunter_Both_RadioButton.isSelected());}
-        
-        if (callbacks.loadExtensionSetting("Hunter_CaseDifference_CheckBox") != null) {
-            Hunter_CaseSensitive_CheckBox.setSelected(Boolean.parseBoolean(callbacks.loadExtensionSetting("Hunter_CaseDifference_CheckBox")));
-        }
-        else{ Hunter_CaseSensitive_CheckBox.setSelected(Config.HUNTER_CASE); }
         
         if (callbacks.loadExtensionSetting("Hunter_Keyword_List") != null) {
             Hunter_Keyword_List.setListData(callbacks.loadExtensionSetting("Hunter_Keyword_List").split(","));
         }
-        else{ Hunter_Keyword_List.setListData(Config.HUNTER_KEYWORDS); }
+        else{ Hunter_Keyword_List.setListData(HUNTER_KEYWORDS); }
+        
+        if (callbacks.loadExtensionSetting("File_Filter_TextArea") != null) {
+            File_Filter_TextArea.setText(callbacks.loadExtensionSetting("File_Filter_TextArea"));
+        }
+        else{ File_Filter_TextArea.setText(FILE_FILTER_STRING); }
+        
+        if (callbacks.loadExtensionSetting("Domain_Filter_TextArea") != null) {
+            Domain_Filter_TextArea.setText(callbacks.loadExtensionSetting("Domain_Filter_TextArea"));
+        }
+        
+        if (callbacks.loadExtensionSetting("Request_Body_CheckBox") != null) {
+            Request_Body_CheckBox.setSelected(Boolean.parseBoolean(callbacks.loadExtensionSetting("Request_Body_CheckBox")));
+        }
+        
+        if (callbacks.loadExtensionSetting("Request_Headers_CheckBox") != null) {
+            Request_Headers_CheckBox.setSelected(Boolean.parseBoolean(callbacks.loadExtensionSetting("Request_Headers_CheckBox")));
+        }
+        
+        if (callbacks.loadExtensionSetting("Response_Body_CheckBox") != null) {
+            Response_Body_CheckBox.setSelected(Boolean.parseBoolean(callbacks.loadExtensionSetting("Response_Body_CheckBox")));
+        }
+        
+        if (callbacks.loadExtensionSetting("Response_Headers_CheckBox") != null) {
+            Response_Headers_CheckBox.setSelected(Boolean.parseBoolean(callbacks.loadExtensionSetting("Response_Headers_CheckBox")));
+        }
+        
+        if (callbacks.loadExtensionSetting("File_Filter_CheckBox") != null) {
+            File_Filter_CheckBox.setSelected(Boolean.parseBoolean(callbacks.loadExtensionSetting("File_Filter_CheckBox")));
+        }
+                
+        if (callbacks.loadExtensionSetting("Domain_Filter_CheckBox") != null) {
+            Domain_Filter_CheckBox.setSelected(Boolean.parseBoolean(callbacks.loadExtensionSetting("Domain_Filter_CheckBox")));
+        }
+        
+        File_Filter_TextArea.setEnabled(File_Filter_CheckBox.isSelected());
+        Domain_Filter_TextArea.setEnabled(Domain_Filter_CheckBox.isSelected());
+       
     }
     
-    private void hunterSwitchOn(boolean isEnable){
-        Hunter_Add_Button.setEnabled(isEnable);
-        Hunter_Add_TextField.setEnabled(isEnable);
-        Hunter_Both_RadioButton.setEnabled(isEnable);
-        Hunter_CaseSensitive_CheckBox.setEnabled(isEnable);
-        Hunter_ClearTable_Button.setEnabled(isEnable);
-        Hunter_Clear_Button.setEnabled(isEnable);
-        Hunter_Keyword_List.setEnabled(isEnable);
-        Hunter_Paste_Button.setEnabled(isEnable);
-        Hunter_Remove_Button.setEnabled(isEnable);
-        Hunter_Request_RadioButton.setEnabled(isEnable);
-        Hunter_Response_RadioButton.setEnabled(isEnable);
-        Hunter_SaveSettings_Button.setEnabled(isEnable);
-        Hunter_Table.setEnabled(isEnable);
-    }
-
-    /**
+     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
@@ -172,23 +178,13 @@ public class KeywordHunter extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        Hunter_CaseSensitive_CheckBox = new javax.swing.JCheckBox();
-        Hunter_Paste_Button = new javax.swing.JButton();
-        Hunter_Remove_Button = new javax.swing.JButton();
-        Hunter_Clear_Button = new javax.swing.JButton();
-        jScrollPane8 = new javax.swing.JScrollPane();
-        Hunter_Keyword_List = new javax.swing.JList<>();
-        Hunter_Add_Button = new javax.swing.JButton();
-        Hunter_Add_TextField = new javax.swing.JTextField();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        jPanel1 = new javax.swing.JPanel();
         jScrollPane10 = new javax.swing.JScrollPane();
         Hunter_Table = new javax.swing.JTable();
         jPanel12 = new javax.swing.JPanel();
         Hunter_ClearTable_Button = new javax.swing.JButton();
         Hunter_SaveSettings_Button = new javax.swing.JButton();
-        Hunter_Request_RadioButton = new javax.swing.JRadioButton();
-        Hunter_Response_RadioButton = new javax.swing.JRadioButton();
-        Hunter_Both_RadioButton = new javax.swing.JRadioButton();
-        Hunter_Switch_CheckBox = new javax.swing.JCheckBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         request_textEditor = callbacks.createTextEditor();
@@ -197,48 +193,36 @@ public class KeywordHunter extends javax.swing.JPanel {
         response_textEditor = callbacks.createTextEditor();
         addComponentListener(response_textEditor.getComponent());
         jScrollPane3 = new javax.swing.JScrollPane(response_textEditor.getComponent());
+        jPanel3 = new javax.swing.JPanel();
+        Hunter_Switch_CheckBox = new javax.swing.JCheckBox();
+        Hunter_CaseSensitive_CheckBox = new javax.swing.JCheckBox();
+        Hunter_Paste_Button = new javax.swing.JButton();
+        Hunter_Remove_Button = new javax.swing.JButton();
+        Hunter_Clear_Button = new javax.swing.JButton();
+        Hunter_Add_Button = new javax.swing.JButton();
+        Hunter_Add_TextField = new javax.swing.JTextField();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        Hunter_Keyword_List = new javax.swing.JList<>();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        Request_Headers_CheckBox = new javax.swing.JCheckBox();
+        Response_Headers_CheckBox = new javax.swing.JCheckBox();
+        Request_Body_CheckBox = new javax.swing.JCheckBox();
+        Response_Body_CheckBox = new javax.swing.JCheckBox();
+        jPanel2 = new javax.swing.JPanel();
+        All_Hunt_Button = new javax.swing.JButton();
+        Default_Hunt_Button = new javax.swing.JButton();
+        File_Filter_CheckBox = new javax.swing.JCheckBox();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        File_Filter_TextArea = new javax.swing.JTextArea();
+        Domain_Filter_CheckBox = new javax.swing.JCheckBox();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        Domain_Filter_TextArea = new javax.swing.JTextArea();
 
-        Hunter_CaseSensitive_CheckBox.setSelected(false);
-        Hunter_CaseSensitive_CheckBox.setText("Case sensitive");
-        Hunter_CaseSensitive_CheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Hunter_CaseSensitive_CheckBoxActionPerformed(evt);
-            }
-        });
+        setLayout(new java.awt.BorderLayout());
 
-        Hunter_Paste_Button.setText("Paste");
-        Hunter_Paste_Button.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Hunter_Paste_ButtonActionPerformed(evt);
-            }
-        });
-
-        Hunter_Remove_Button.setText("Remove");
-        Hunter_Remove_Button.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Hunter_Remove_ButtonActionPerformed(evt);
-            }
-        });
-
-        Hunter_Clear_Button.setText("Clear");
-        Hunter_Clear_Button.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Hunter_Clear_ButtonActionPerformed(evt);
-            }
-        });
-
-        jScrollPane8.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane8.setPreferredSize(new java.awt.Dimension(567, 150));
-
-        Hunter_Keyword_List.setPreferredSize(new java.awt.Dimension(567, 140));
-        jScrollPane8.setViewportView(Hunter_Keyword_List);
-
-        Hunter_Add_Button.setText("Add");
-        Hunter_Add_Button.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Hunter_Add_ButtonActionPerformed(evt);
-            }
-        });
+        jScrollPane6.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         Hunter_Table.setAutoCreateRowSorter(true);
         Hunter_Table.setModel(new javax.swing.table.DefaultTableModel(
@@ -307,21 +291,6 @@ public class KeywordHunter extends javax.swing.JPanel {
         });
         jPanel12.add(Hunter_SaveSettings_Button);
 
-        Hunter_Request_RadioButton.setText("Request Only");
-
-        Hunter_Response_RadioButton.setText("Response Only");
-
-        Hunter_Both_RadioButton.setSelected(true);
-        Hunter_Both_RadioButton.setText("Hunt Both");
-
-        Hunter_Switch_CheckBox.setSelected(true);
-        Hunter_Switch_CheckBox.setText("Hunter Switch");
-        Hunter_Switch_CheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Hunter_Switch_CheckBoxActionPerformed(evt);
-            }
-        });
-
         jScrollPane2.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jScrollPane2MouseClicked(evt);
@@ -332,76 +301,257 @@ public class KeywordHunter extends javax.swing.JPanel {
 
         jScrollPane1.setViewportView(jTabbedPane1);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(23, 23, 23)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(Hunter_Both_RadioButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(Hunter_Request_RadioButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(Hunter_Response_RadioButton))
-                    .addComponent(Hunter_Switch_CheckBox)
-                    .addComponent(jPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 1284, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(Hunter_CaseSensitive_CheckBox)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addComponent(Hunter_Add_Button, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(Hunter_Add_TextField))
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(Hunter_Clear_Button, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(Hunter_Remove_Button, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(Hunter_Paste_Button, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addGap(37, 37, 37)
-                        .addComponent(jScrollPane1)))
-                .addContainerGap(23, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(Hunter_Switch_CheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
+        Hunter_Switch_CheckBox.setSelected(true);
+        Hunter_Switch_CheckBox.setText("Hunter Enable");
+        Hunter_Switch_CheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Hunter_Switch_CheckBoxActionPerformed(evt);
+            }
+        });
+
+        Hunter_CaseSensitive_CheckBox.setSelected(false);
+        Hunter_CaseSensitive_CheckBox.setText("Case sensitive");
+        Hunter_CaseSensitive_CheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Hunter_CaseSensitive_CheckBoxActionPerformed(evt);
+            }
+        });
+
+        Hunter_Paste_Button.setText("Paste");
+        Hunter_Paste_Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Hunter_Paste_ButtonActionPerformed(evt);
+            }
+        });
+
+        Hunter_Remove_Button.setText("Remove");
+        Hunter_Remove_Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Hunter_Remove_ButtonActionPerformed(evt);
+            }
+        });
+
+        Hunter_Clear_Button.setText("Clear");
+        Hunter_Clear_Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Hunter_Clear_ButtonActionPerformed(evt);
+            }
+        });
+
+        Hunter_Add_Button.setText("Add");
+        Hunter_Add_Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Hunter_Add_ButtonActionPerformed(evt);
+            }
+        });
+
+        Hunter_Add_TextField.setPreferredSize(new java.awt.Dimension(6, 30));
+
+        jScrollPane7.setViewportView(Hunter_Keyword_List);
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(Hunter_Add_Button, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Hunter_Add_TextField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(Hunter_Switch_CheckBox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Hunter_CaseSensitive_CheckBox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(Hunter_Paste_Button)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Hunter_Remove_Button)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Hunter_Clear_Button))
-                            .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(Hunter_Add_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Hunter_Add_Button)))
-                    .addComponent(jScrollPane1))
-                .addGap(26, 26, 26)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(Hunter_Both_RadioButton)
-                    .addComponent(Hunter_Request_RadioButton)
-                    .addComponent(Hunter_Response_RadioButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
-                .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(34, 34, 34))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(Hunter_Paste_Button, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Hunter_Remove_Button, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Hunter_Clear_Button, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                .addGap(0, 0, 0))
         );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Hunter_Switch_CheckBox)
+                    .addComponent(Hunter_CaseSensitive_CheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(Hunter_Paste_Button)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Hunter_Remove_Button)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Hunter_Clear_Button)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane7))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Hunter_Add_Button)
+                    .addComponent(Hunter_Add_TextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+        );
+
+        jLabel1.setText("Hunt Request:");
+
+        jLabel2.setText("Hunt Response:");
+
+        Request_Headers_CheckBox.setText("Headers");
+
+        Response_Headers_CheckBox.setText("Headers");
+
+        Request_Body_CheckBox.setSelected(true);
+        Request_Body_CheckBox.setText("Body");
+
+        Response_Body_CheckBox.setSelected(true);
+        Response_Body_CheckBox.setText("Body");
+
+        jPanel2.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 20, 5));
+
+        All_Hunt_Button.setText("All Hunt");
+        All_Hunt_Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                All_Hunt_ButtonActionPerformed(evt);
+            }
+        });
+        jPanel2.add(All_Hunt_Button);
+
+        Default_Hunt_Button.setText("Default");
+        Default_Hunt_Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Default_Hunt_ButtonActionPerformed(evt);
+            }
+        });
+        jPanel2.add(Default_Hunt_Button);
+
+        File_Filter_CheckBox.setSelected(true);
+        File_Filter_CheckBox.setText("File Filter");
+        File_Filter_CheckBox.setMaximumSize(new java.awt.Dimension(140, 27));
+        File_Filter_CheckBox.setMinimumSize(new java.awt.Dimension(140, 27));
+        File_Filter_CheckBox.setPreferredSize(new java.awt.Dimension(140, 27));
+        File_Filter_CheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                File_Filter_CheckBoxActionPerformed(evt);
+            }
+        });
+
+        File_Filter_TextArea.setColumns(20);
+        File_Filter_TextArea.setRows(5);
+        File_Filter_TextArea.setToolTipText("use (;) to split filename");
+        jScrollPane4.setViewportView(File_Filter_TextArea);
+
+        Domain_Filter_CheckBox.setText("Domain Filter");
+        Domain_Filter_CheckBox.setMaximumSize(new java.awt.Dimension(140, 27));
+        Domain_Filter_CheckBox.setMinimumSize(new java.awt.Dimension(140, 27));
+        Domain_Filter_CheckBox.setPreferredSize(new java.awt.Dimension(140, 27));
+        Domain_Filter_CheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Domain_Filter_CheckBoxActionPerformed(evt);
+            }
+        });
+
+        Domain_Filter_TextArea.setColumns(20);
+        Domain_Filter_TextArea.setRows(5);
+        Domain_Filter_TextArea.setToolTipText("use (;) to split domain");
+        jScrollPane5.setViewportView(Domain_Filter_TextArea);
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(File_Filter_CheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Domain_Filter_CheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel4Layout.createSequentialGroup()
+                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel2))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(Response_Headers_CheckBox, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(Request_Headers_CheckBox, javax.swing.GroupLayout.Alignment.TRAILING))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(Request_Body_CheckBox, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(Response_Body_CheckBox, javax.swing.GroupLayout.Alignment.TRAILING)))))
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Request_Body_CheckBox)
+                    .addComponent(Request_Headers_CheckBox)
+                    .addComponent(jLabel1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(Response_Body_CheckBox)
+                    .addComponent(Response_Headers_CheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 5, Short.MAX_VALUE)
+                .addComponent(File_Filter_CheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Domain_Filter_CheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, 1262, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                        .addGap(27, 27, 27)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jScrollPane1)
+                            .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 942, Short.MAX_VALUE))))
+                .addContainerGap(38, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(40, Short.MAX_VALUE))
+        );
+
+        jScrollPane6.setViewportView(jPanel1);
+
+        add(jScrollPane6, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void Hunter_CaseSensitive_CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Hunter_CaseSensitive_CheckBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Hunter_CaseSensitive_CheckBoxActionPerformed
 
     private void Hunter_Paste_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Hunter_Paste_ButtonActionPerformed
         String[] orginStrings = getListString(Hunter_Keyword_List);
@@ -436,53 +586,92 @@ public class KeywordHunter extends javax.swing.JPanel {
     }//GEN-LAST:event_Hunter_ClearTable_ButtonActionPerformed
 
     private void Hunter_SaveSettings_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Hunter_SaveSettings_ButtonActionPerformed
-        callbacks.saveExtensionSetting("Hunter_Both_RadioButton", Boolean.toString(Hunter_Both_RadioButton.isSelected()));
-        callbacks.saveExtensionSetting("Hunter_Request_RadioButton", Boolean.toString(Hunter_Request_RadioButton.isSelected()));
-        callbacks.saveExtensionSetting("Hunter_Response_RadioButton", Boolean.toString(Hunter_Response_RadioButton.isSelected()));
-        callbacks.saveExtensionSetting("Hunter_CaseDifference_CheckBox", Boolean.toString(Hunter_CaseSensitive_CheckBox.isSelected()));
+        callbacks.saveExtensionSetting("Hunter_CaseSensitive_CheckBox", Boolean.toString(Hunter_CaseSensitive_CheckBox.isSelected()));
         callbacks.saveExtensionSetting("Hunter_Keyword_List", String.join(",", getListString(Hunter_Keyword_List)));
+        callbacks.saveExtensionSetting("Request_Body_CheckBox", Boolean.toString(Request_Body_CheckBox.isSelected()));
+        callbacks.saveExtensionSetting("Request_Headers_CheckBox", Boolean.toString(Request_Headers_CheckBox.isSelected()));
+        callbacks.saveExtensionSetting("Response_Body_CheckBox", Boolean.toString(Response_Body_CheckBox.isSelected()));
+        callbacks.saveExtensionSetting("Response_Headers_CheckBox", Boolean.toString(Response_Headers_CheckBox.isSelected()));
+        callbacks.saveExtensionSetting("File_Filter_CheckBox", Boolean.toString(File_Filter_CheckBox.isSelected()));
+        callbacks.saveExtensionSetting("Domain_Filter_CheckBox", Boolean.toString(Domain_Filter_CheckBox.isSelected()));
+        callbacks.saveExtensionSetting("File_Filter_TextArea", File_Filter_TextArea.getText());
+        callbacks.saveExtensionSetting("Domain_Filter_TextArea", Domain_Filter_TextArea.getText());
     }//GEN-LAST:event_Hunter_SaveSettings_ButtonActionPerformed
-
-    private void Hunter_CaseSensitive_CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Hunter_CaseSensitive_CheckBoxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Hunter_CaseSensitive_CheckBoxActionPerformed
 
     private void Hunter_Switch_CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Hunter_Switch_CheckBoxActionPerformed
         if(Hunter_Switch_CheckBox.isSelected()){
             Hunter_Switch_CheckBox.setText("Hunter Enable");
-            hunterSwitchOn(true);
+//            hunterSwitchOn(true);
         }
         else{
             Hunter_Switch_CheckBox.setText("Hunter Disable");
-            hunterSwitchOn(false);
+//            hunterSwitchOn(false);
         }
     }//GEN-LAST:event_Hunter_Switch_CheckBoxActionPerformed
 
     private void jScrollPane2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jScrollPane2MouseClicked
-//        textAddRightClickActions(evt);
+        //        textAddRightClickActions(evt);
     }//GEN-LAST:event_jScrollPane2MouseClicked
 
+    private void All_Hunt_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_All_Hunt_ButtonActionPerformed
+        Request_Body_CheckBox.setSelected(true);
+        Request_Headers_CheckBox.setSelected(true);
+        Response_Body_CheckBox.setSelected(true);
+        Response_Headers_CheckBox.setSelected(true);
+    }//GEN-LAST:event_All_Hunt_ButtonActionPerformed
+
+    private void Default_Hunt_ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Default_Hunt_ButtonActionPerformed
+        Request_Body_CheckBox.setSelected(true);
+        Request_Headers_CheckBox.setSelected(false);
+        Response_Body_CheckBox.setSelected(true);
+        Response_Headers_CheckBox.setSelected(false);
+    }//GEN-LAST:event_Default_Hunt_ButtonActionPerformed
+
+    private void File_Filter_CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_File_Filter_CheckBoxActionPerformed
+        File_Filter_TextArea.setEnabled(File_Filter_CheckBox.isSelected());
+    }//GEN-LAST:event_File_Filter_CheckBoxActionPerformed
+
+    private void Domain_Filter_CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Domain_Filter_CheckBoxActionPerformed
+        Domain_Filter_TextArea.setEnabled(Domain_Filter_CheckBox.isSelected());
+    }//GEN-LAST:event_Domain_Filter_CheckBoxActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton All_Hunt_Button;
+    private javax.swing.JButton Default_Hunt_Button;
+    public javax.swing.JCheckBox Domain_Filter_CheckBox;
+    public javax.swing.JTextArea Domain_Filter_TextArea;
+    public javax.swing.JCheckBox File_Filter_CheckBox;
+    public javax.swing.JTextArea File_Filter_TextArea;
     private javax.swing.JButton Hunter_Add_Button;
     private javax.swing.JTextField Hunter_Add_TextField;
-    public javax.swing.JRadioButton Hunter_Both_RadioButton;
     public javax.swing.JCheckBox Hunter_CaseSensitive_CheckBox;
     private javax.swing.JButton Hunter_ClearTable_Button;
     private javax.swing.JButton Hunter_Clear_Button;
     public javax.swing.JList<String> Hunter_Keyword_List;
     private javax.swing.JButton Hunter_Paste_Button;
     private javax.swing.JButton Hunter_Remove_Button;
-    public javax.swing.JRadioButton Hunter_Request_RadioButton;
-    public javax.swing.JRadioButton Hunter_Response_RadioButton;
     private javax.swing.JButton Hunter_SaveSettings_Button;
     public javax.swing.JCheckBox Hunter_Switch_CheckBox;
     public javax.swing.JTable Hunter_Table;
+    public javax.swing.JCheckBox Request_Body_CheckBox;
+    public javax.swing.JCheckBox Request_Headers_CheckBox;
+    public javax.swing.JCheckBox Response_Body_CheckBox;
+    public javax.swing.JCheckBox Response_Headers_CheckBox;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane10;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JScrollPane jScrollPane8;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
 }

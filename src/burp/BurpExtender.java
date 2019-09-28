@@ -1,6 +1,8 @@
 package burp;
 
 import GUI.KeywordHunter;
+import GUI.rightMenu;
+
 import java.io.PrintWriter;
 import javax.swing.*;
 import java.awt.Component;
@@ -9,7 +11,7 @@ public class BurpExtender implements IBurpExtender,ITab,IExtensionStateListener 
     public static IBurpExtenderCallbacks callbacks;
     public IExtensionHelpers helpers;
     public String extensionName = "Keyword Hunter";
-    public String version ="v0.1";
+    public String version ="v0.2.1";
     public PrintWriter stdout;
     public PrintWriter stderr;
     private KeywordHunter mainPane;
@@ -20,6 +22,7 @@ public class BurpExtender implements IBurpExtender,ITab,IExtensionStateListener 
         this.callbacks = callbacks;
         this.helpers = callbacks.getHelpers();
         callbacks.setExtensionName(extensionName);
+        callbacks.registerContextMenuFactory(new rightMenu(callbacks));
         callbacks.registerHttpListener(new httpListener(callbacks));
 
         stdout = new PrintWriter(callbacks.getStdout(),true);

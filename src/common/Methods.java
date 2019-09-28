@@ -37,32 +37,87 @@ public class Methods {
         return value;
     }
 
-    public static boolean findStringFromMessageByte(byte[] messageByte,String keyword){
-        String reqString = new String(messageByte);
+    public static String getBody(IExtensionHelpers helpers, IHttpRequestResponse messageInfo, boolean isRequest) {
+        try {
+            int BodyOffset;
+            int body_length;
+            String body;
+            if(isRequest){
+                byte[] request = messageInfo.getRequest();
+                IRequestInfo analyzeRequest = helpers.analyzeRequest(request);
+                BodyOffset = analyzeRequest.getBodyOffset();
+                body_length = request.length - BodyOffset;
+                body = new String(request, BodyOffset, body_length, "UTF-8");
+            } else{
+                if (messageInfo.getResponse() != null) {
+                    byte[] response = messageInfo.getResponse();
+                    IResponseInfo analyzeResponse = helpers.analyzeResponse(response);
+                    BodyOffset = analyzeResponse.getBodyOffset();
+                    body_length = response.length - BodyOffset;
+                    body = new String(response, BodyOffset, body_length, "UTF-8");
+                }else {
+                    body = "";
+                }
+
+            }
+            return body;
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public static String getHeader(IExtensionHelpers helpers, IHttpRequestResponse messageInfo, boolean isRequest){
+        try {
+            List<String> headers;
+            if(isRequest){
+                byte[] request = messageInfo.getRequest();
+                IRequestInfo analyzeRequest = helpers.analyzeRequest(request);
+                headers = analyzeRequest.getHeaders();
+            } else{
+                byte[] response = messageInfo.getResponse();
+                IResponseInfo analyzeResponse = helpers.analyzeResponse(response);
+                headers = analyzeResponse.getHeaders();
+            }
+            return String.join("\n",headers);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public static boolean findString(String messageString,String keyword){
         boolean caseDifference = KeywordHunter.getInstance().Hunter_CaseSensitive_CheckBox.isSelected();
         if(!caseDifference){
-            reqString = reqString.toLowerCase();
+            messageString = messageString.toLowerCase();
             keyword = keyword.toLowerCase();
         }
-        boolean isExist = reqString.contains(keyword);
+        boolean isExist = messageString.contains(keyword);
         return isExist;
     }
 
-    public static String keyFoundPlace(IHttpRequestResponse messageInfo,String keyword){
+    public static String keyFoundPlace(IExtensionHelpers helpers, IHttpRequestResponse messageInfo,String keyword){
         String foundPlace = "";
         boolean keyInResponse = false;
         boolean keyInRequest = false;
-        boolean requestOnly = KeywordHunter.getInstance().Hunter_Request_RadioButton.isSelected();;
-        boolean responseOnly = KeywordHunter.getInstance().Hunter_Response_RadioButton.isSelected();
-        boolean huntBoth = KeywordHunter.getInstance().Hunter_Both_RadioButton.isSelected();
 
-        if(huntBoth){
-            if(messageInfo.getResponse() != null){ keyInResponse = findStringFromMessageByte(messageInfo.getResponse(),keyword); }
-            keyInRequest = findStringFromMessageByte(messageInfo.getRequest(),keyword);
-        }else if(requestOnly){
-            keyInRequest = findStringFromMessageByte(messageInfo.getRequest(),keyword);
-        }else if(responseOnly){
-            if(messageInfo.getResponse() != null){ keyInResponse = findStringFromMessageByte(messageInfo.getResponse(),keyword); }
+        boolean requestHeaders = KeywordHunter.getInstance().Request_Headers_CheckBox.isSelected();
+        boolean requestBody = KeywordHunter.getInstance().Request_Body_CheckBox.isSelected();
+        boolean responseHeaders = KeywordHunter.getInstance().Response_Headers_CheckBox.isSelected();
+        boolean responseBody = KeywordHunter.getInstance().Response_Body_CheckBox.isSelected();
+
+        if(requestHeaders&&requestBody){
+            keyInRequest = findString(new String(messageInfo.getRequest()),keyword);
+        }else if(requestHeaders){
+            keyInRequest = findString(getHeader(helpers,messageInfo,true),keyword);
+        }else if(requestBody){
+            keyInRequest = findString(getBody(helpers,messageInfo,true),keyword);
+        }
+
+        if(responseHeaders && responseBody){
+            if(messageInfo.getResponse() != null){ keyInResponse = findString(new String(messageInfo.getResponse()),keyword);}
+        }else if(responseHeaders){
+            keyInResponse = findString(getHeader(helpers,messageInfo,false),keyword);
+        }else if(responseBody){
+            keyInResponse = findString(getBody(helpers,messageInfo,false),keyword);
         }
 
         if(keyInRequest){ foundPlace = "Request"; }
@@ -138,5 +193,19 @@ public class Methods {
         arr1 = Arrays.copyOf(arr1,a+b);
         System.arraycopy(arr2,0,arr1,a,b);
         return arr1;
+    }
+
+    public static String getFilename(IExtensionHelpers helpers, IHttpRequestResponse messageInfo){
+        byte[] request = messageInfo.getRequest();
+        IRequestInfo analyzeRequest = helpers.analyzeRequest(request);
+        String url = analyzeRequest.getHeaders().get(0).split(" ")[1];
+        String filename =url.substring(url.lastIndexOf('/')+1);
+        if(filename.contains("?")){
+            filename = filename.split("\\?")[0];
+        }
+        if(filename.contains(".")){
+            filename = filename.substring(filename.lastIndexOf('.')+1);
+        }
+        return filename;
     }
 }

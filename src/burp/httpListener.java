@@ -11,6 +11,7 @@ public class httpListener implements IHttpListener {
     private final IExtensionHelpers helpers;
     private PrintWriter stdout;
     private PrintWriter stderr;
+    private int reqIdx = 0;
 
     public httpListener(IBurpExtenderCallbacks callbacks) {
         this.callbacks = callbacks;
@@ -23,17 +24,54 @@ public class httpListener implements IHttpListener {
     public void processHttpMessage (int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo)
     {
         if((KeywordHunter.getInstance().Hunter_Switch_CheckBox.isSelected())&&(toolFlag==4)){
+
+
+            if((KeywordHunter.getInstance().Domain_Filter_CheckBox.isSelected())&&(KeywordHunter.getInstance().Domain_Filter_TextArea.getText()!="")){
+                inDomainFilterAddTable(messageInfo);
+            }else if((KeywordHunter.getInstance().File_Filter_CheckBox.isSelected())&&(KeywordHunter.getInstance().File_Filter_TextArea.getText()!="")){
+                inFileFilterAddTable(messageInfo);
+            }
+            else{
+                DefaultTableModel tableModel = (DefaultTableModel)(KeywordHunter.getInstance().Hunter_Table).getModel();
+                addHunterTable(tableModel,messageInfo);
+            }
+        }
+    }
+
+    private void inDomainFilterAddTable(IHttpRequestResponse messageInfo){
+        boolean inDomainFilter = inFilter(KeywordHunter.getInstance().Domain_Filter_TextArea.getText(),findHeader(helpers.analyzeRequest(messageInfo).getHeaders(), "Host"));
+        if(inDomainFilter){
+            if((KeywordHunter.getInstance().File_Filter_CheckBox.isSelected())&&(KeywordHunter.getInstance().File_Filter_TextArea.getText()!="")){
+                inFileFilterAddTable(messageInfo);
+            }
+        }
+    }
+
+    private void inFileFilterAddTable(IHttpRequestResponse messageInfo){
+        boolean inFileFilter = inFilter(KeywordHunter.getInstance().File_Filter_TextArea.getText(),getFilename(helpers,messageInfo));
+        if(!inFileFilter){
             DefaultTableModel tableModel = (DefaultTableModel)(KeywordHunter.getInstance().Hunter_Table).getModel();
             addHunterTable(tableModel,messageInfo);
         }
     }
 
-    private int reqIdx = 0;
-    public void addHunterTable(DefaultTableModel requestTableModel,IHttpRequestResponse messageInfo){
+    private boolean inFilter(String filter,String messageStr){
+        boolean inFilter = false;
+        String[] filterStrs = filter.split(";");
+        for(String filterStr: filterStrs){
+            if(messageStr.equals(filterStr)){
+                inFilter = true;
+                break;
+            }
+        }
+        return inFilter;
+    }
+
+    private void addHunterTable(DefaultTableModel requestTableModel,IHttpRequestResponse messageInfo){
         IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
         String[] keywordStrings =  getListString(KeywordHunter.getInstance().Hunter_Keyword_List);
         for(String keyword: keywordStrings) {
-            String foundPlace = keyFoundPlace(messageInfo, keyword);
+            String foundPlace = keyFoundPlace(helpers,messageInfo, keyword);
             if (foundPlace != "") {
                 String statusCode;
                 String responseLength;
